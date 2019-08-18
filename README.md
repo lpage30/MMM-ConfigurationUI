@@ -29,7 +29,7 @@ This form is created using the read module configuration and a specification hos
 
 # setup
 1. copy over module into MagicMirror/modules directory
-11. add following css class style to `MagicMirror/css/custom.css`
+2. add following css class style to `MagicMirror/css/custom.css`
 ```
     .MMMConfigurationUI {
         position: absolute;
@@ -41,8 +41,18 @@ This form is created using the read module configuration and a specification hos
         display: inline-flex;
     }
 ```
-111. npm install the module
-
+3. npm install the module
+4. configuration
+`/MagicMirror/config/config.js` Module configuration:
+```
+    {
+        module: 'MMM-ConfigurationUI',
+        position: 'fullscreen_above',
+        config: {
+                cssClassname: 'MMMConfigurationUI', // style to use for iframe; must be in custom.css
+        },
+    }
+```
 # Initial Angular Project was Generated
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.0.2.
 [Notes](https://adrianmejia.com/angular-2-tutorial-create-a-crud-app-with-angular-cli-and-typescript/)
