@@ -3,9 +3,23 @@ const bodyParser = require("body-parser");
 const NodeHelper = require("node_helper");
 const { spawn } = require('child_process');
 const cors = require('cors');
+const { readFileSync, writeFileSync } = require('fs');
+const path = require('path');
 const ConfigFile = require('./configfile');
-const {CONFIG_SERVER_RUNNING,  HOST_ADDRESS, MMM_CONFIGURATION_UI_PORT,  MODULE_STARTED} = require('./application_paths');
+const {CONFIG_SERVER_RUNNING,  HOST_ADDRESS, MM_PORT,
+    MMM_CONFIGURATION_UI_PORT,  MMM_MODULES_DIR, MMM_THIS_MODULE_NAME, MODULE_STARTED} = require('./application_paths');
+const MAGICMIRROR_URI = `http://${HOST_ADDRESS}:${MM_PORT}`;
 
+function updateAppSettingsJson() {
+    const appSettingsJSONFile = path.join(MMM_MODULES_DIR, MMM_THIS_MODULE_NAME, 'src/assets/appsettings.json')
+    const currentSettings = JSON.parse(readFileSync(appSettingsJSONFile, 'utf8'))
+    if (currentSettings.configModuleURI !== MAGICMIRROR_URI) {
+        const newSettings = Object.assign(currentSettings, {
+            configModuleURI: MAGICMIRROR_URI
+        });
+        writeFileSync(appSettingsJSONFile, JSON.stringify(newSettings, null, 1));
+    }
+}
 module.exports = NodeHelper.create({
 
     socketNotificationReceived: function(notification) {
@@ -22,7 +36,8 @@ module.exports = NodeHelper.create({
         this.moduleStarted = false;
         this.configUIServerRunning = false;
         this.configFile = new ConfigFile()
-        this.expressApp.use(bodyParser.urlencoded())
+        updateAppSettingsJson();
+        this.expressApp.use(bodyParser.urlencoded({ extended: true }))
         this.expressApp.use(bodyParser.json())
         this.expressApp.use(cors())
         console.log("Starting node helper for: " + this.name);

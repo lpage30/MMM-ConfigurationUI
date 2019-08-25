@@ -1,8 +1,9 @@
+const MagicMirrorRoot = __dirname.substring(0, __dirname.indexOf('MagicMirror') + 11);
 const { readFile, writeFile } = require('fs');
 const path = require('path');
 const { promisify } = require('util');
+const { MMM_MODULES_DIR } = r = require(`${MagicMirrorRoot}/modules/MMM-ConfigurationUI/application_paths`)
 
-const MMM_MODULES_DIR = path.join(__dirname, '..');
 const MMM_CONFIG_FILE = path.join(MMM_MODULES_DIR, '../config/config.js');
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);

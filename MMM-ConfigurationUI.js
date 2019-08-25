@@ -1,8 +1,11 @@
-const MagicMirrorRoot = __dirname.substring(0, __dirname.indexOf('MagicMirror') + 11);
-const { CONFIG_SERVER_RUNNING, HOST_ADDRESS, MMM_CONFIGURATION_UI_PORT, MODULE_STARTED } = require(`${MagicMirrorRoot}/modules/MMM-ConfigurationUI/application_paths`)
+
+const { CONFIG_SERVER_RUNNING, HOST_ADDRESS,
+	MMM_CONFIGURATION_UI_PORT, MMM_THIS_MODULE_NAME, 
+	MODULE_STARTED } = require(`${__dirname.substring(0, __dirname.indexOf('MagicMirror') + 11)}/modules/MMM-ConfigurationUI/application_paths`)
+
 const CONFIGURATION_UI_URL = `http://${HOST_ADDRESS}:${MMM_CONFIGURATION_UI_PORT}`;
 
-Module.register('MMM-ConfigurationUI', {
+Module.register(MMM_THIS_MODULE_NAME, {
 	// Default module config.
 	defaults: {
 		updateInterval: 0,
