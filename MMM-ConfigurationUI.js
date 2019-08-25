@@ -12,20 +12,28 @@ Module.register('MMM-ConfigurationUI', {
 		this.updateDom();
 	},
 	start: function() {
+		this.serverRunning = false
 		this.sendSocketNotification(MODULE_STARTED);
 	},
 	socketNotificationReceived: function(notification) {
 		if (notification === CONFIG_SERVER_RUNNING) {
+			this.serverRunning = true
 			console.log("ConfigUIServer is up: REFRESHING MODULE");
 			this.render = !this.hidden;
 			this.updateDom();
 		}
 	},
 	getDom: function () {
-		var configFrame = document.createElement("iframe");
-		configFrame.setAttribute('src', CONFIGURATION_UI_URL);
-		if (this.config.cssClassname) configFrame.className = this.config.cssClassname;
-		return configFrame;
+		var configUI;
+		if(this.serverRunning) {
+			configUI = document.createElement("iframe");
+			configUI.setAttribute('src', CONFIGURATION_UI_URL);
+		} else {
+			configUI = document.createElement("div");
+			configUI.innerHTML = 'Loading...'
+		}
+		if (this.config.cssClassname) configUI.className = this.config.cssClassname;
+		return configUI;
 	},
 /*
 	resume: function () {

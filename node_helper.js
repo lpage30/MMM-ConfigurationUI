@@ -1,7 +1,8 @@
 
-const NodeHelper = require("node_helper");
 const bodyParser = require("body-parser");
+const NodeHelper = require("node_helper");
 const { spawn } = require('child_process');
+const cors = require('cors');
 const ConfigFile = require('./configfile');
 const {CONFIG_SERVER_RUNNING,  HOST_ADDRESS, MMM_CONFIGURATION_UI_PORT,  MODULE_STARTED} = require('./application_paths');
 
@@ -21,38 +22,45 @@ module.exports = NodeHelper.create({
         this.moduleStarted = false;
         this.configUIServerRunning = false;
         this.configFile = new ConfigFile()
-        this.expressApp.use(bodyParser)
+        this.expressApp.use(bodyParser.urlencoded())
+        this.expressApp.use(bodyParser.json())
+        this.expressApp.use(cors())
         console.log("Starting node helper for: " + this.name);
 
         this.expressApp.get('/configuration', (req, res) => {
+            console.log('GET-REQUEST')
             this.configFile.getConfig()
-                .catch(error => {
-                    res.status(500).send({success: false, error});
-                })
                 .then(config => {
                     res.status(200).send({success: true, modules: config.modules });
+                })
+                .catch(error => {
+                    console.error('FAILED GET CONFIGURATION', error)
+                    res.status(500).send({success: false, error});
                 });
         });
 
         // updates the the config
         this.expressApp.put('/configuration', (req, res) => {
+            console.log('PUT-REQUEST')
             const { modules } = req.body
             const promises = modules.forEach(module => {
                 return this.configFile.putModuleConfig(module)
             })
             Promise.all(promises)
-                .catch(error => {
-                    res.status(400).send({success: false, error});
-                })
                 .then(() => {
-                    this.configFile.putConmfig()
+                    this.configFile.putConfig()
                         .catch(error => {
+                            console.error('FAILED PUTTING CONFIGURATION', error)
                             res.status(500).send({success: false, error});
                         })
                         .then(() => {
                             res.status(200).send({success: true });
                         });
                 })
+                .catch(error => {
+                    console.error('FAILED UPDATING MODULE CONFIG', error)
+                    res.status(400).send({success: false, error});
+                });
         });
         // Start angular server for Module
         this.configurationUIServer = spawn(
