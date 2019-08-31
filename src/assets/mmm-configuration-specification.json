@@ -1,7 +1,7 @@
 {
     "module": "string",
     "module_description": "The name of the module. This can also contain the subfolder. Valid examples include clock, default/calendar and custommodules/mymodule.",
-    "position_enum": [
+    "position_picklist": [
         "top_bar",
         "top_left",
         "top_center",

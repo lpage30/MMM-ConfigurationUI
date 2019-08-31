@@ -1,10 +1,11 @@
 const MagicMirrorRoot = __dirname.substring(0, __dirname.indexOf('MagicMirror') + 11);
-const { readFile, writeFile } = require('fs');
+const { readFile, writeFile, existsSync } = require('fs');
 const path = require('path');
 const { promisify } = require('util');
-const { MMM_MODULES_DIR } = r = require(`${MagicMirrorRoot}/modules/MMM-ConfigurationUI/application_paths`)
+const { MMM_MODULES_DIR, MMM_THIS_MODULE_NAME } = r = require(`${MagicMirrorRoot}/modules/MMM-ConfigurationUI/application_paths`)
 
 const MMM_CONFIG_FILE = path.join(MMM_MODULES_DIR, '../config/config.js');
+const MM_SPECIFICATION_FILE = path.join(MMM_MODULES_DIR, `${MMM_THIS_MODULE_NAME}/src/assets/mmm-configuration-specification.json`)
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
 
@@ -94,6 +95,16 @@ class ConfigurationFile {
         }
         this.config.modules = [...allOtherModules, moduleConfig];
         console.log('FINISHED PUTTING MODULE CONFIG', moduleConfig.module)
+    }
+
+    static async getConfigurationSpecification(moduleName) {
+      const configurationUISpecificationJSON = moduleName.toLowerCase() === 'magicmirror' ?
+        MM_SPECIFICATION_FILE : path.join(MMM_MODULES_DIR, `${moduleName}/mmm-configuration-ui-specfile.json`)
+      if (existsSync(configurationUISpecificationJSON)) {
+        const moduleSpecificationString = await readFileAsync(configurationUISpecificationJSON, 'utf-8');
+        return JSON.parse(moduleSpecificationString);
+      }
+      return undefined;
     }
 }
 module.exports =  ConfigurationFile;

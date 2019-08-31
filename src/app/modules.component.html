@@ -1,0 +1,8 @@
+<h2>{{title}}</h2>
+<nav>
+  <a *ngFor="let name of moduleNames"
+     routerLink="/module/{{name}}"
+     routerLinkActive="active">
+    {{name}}</a>
+</nav>
+<router-outlet></router-outlet>

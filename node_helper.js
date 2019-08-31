@@ -42,8 +42,8 @@ module.exports = NodeHelper.create({
         this.expressApp.use(cors())
         console.log("Starting node helper for: " + this.name);
 
-        this.expressApp.get('/configuration', (req, res) => {
-            console.log('GET-REQUEST')
+        this.expressApp.get('/configurations', (req, res) => {
+            console.log('GET-REQUEST all')
             this.configFile.getConfig()
                 .then(config => {
                     res.status(200).send({success: true, modules: config.modules });
@@ -53,10 +53,27 @@ module.exports = NodeHelper.create({
                     res.status(500).send({success: false, error});
                 });
         });
-
-        // updates the the config
-        this.expressApp.put('/configuration', (req, res) => {
-            console.log('PUT-REQUEST')
+        this.expressApp.get('/configuration/:name', (req, res) => {
+            const name = req.params.name
+            console.log(`GET-REQUEST ${name}`)
+            this.configFile.getConfig()
+                .then(config => {
+                    const module = config.modules.find(module => module.module === name)
+                    if (module) {
+                        res.status(200).send({success: true, module });
+                    } else {
+                        console.error(`${name} Not Found`, name, config.modules)
+                        res.status(404).send({succes: false, error: new Error(`${name} not found`)})
+                    }
+                })
+                .catch(error => {
+                    console.error(`FAILED GET CONFIGURATION ${name}`, error)
+                    res.status(500).send({success: false, error});
+                });
+        });
+        // updates all the configs
+        this.expressApp.put('/configurations', (req, res) => {
+            console.log('PUT-REQUEST all')
             const { modules } = req.body
             const promises = modules.forEach(module => {
                 return this.configFile.putModuleConfig(module)
@@ -75,6 +92,44 @@ module.exports = NodeHelper.create({
                 .catch(error => {
                     console.error('FAILED UPDATING MODULE CONFIG', error)
                     res.status(400).send({success: false, error});
+                });
+        });
+        // updates the config
+        this.expressApp.put('/configuration', (req, res) => {
+            const { module } = req.body
+            const name = module.module
+            console.log(`PUT-REQUEST ${name}`)
+            this.configFile.putModuleConfig(module)
+             .then(() => {
+                    this.configFile.putConfig()
+                        .catch(error => {
+                            console.error(`FAILED PUTTING CONFIGURATION ${name}`, error)
+                            res.status(500).send({success: false, error});
+                        })
+                        .then(() => {
+                            res.status(200).send({success: true });
+                        });
+                })
+                .catch(error => {
+                    console.error(`FAILED UPDATING MODULE CONFIG ${name}`, error)
+                    res.status(400).send({success: false, error});
+                });
+        });
+        this.expressApp.get('/specification/:name', (req, res) => {
+            const name = req.params.name
+            console.log(`GET-SPECIFICATION-REQUEST ${name}`)
+            ConfigFile.getConfigurationSpecification(name)
+                .then(spec => {
+                    if (spec) {
+                        res.status(200).send({ success: true, spec })
+                    } else {
+                        console.error(`${name} Not Found`)
+                        res.status(404).send({ success: false, error: new Error(`${name} specification not found`)})
+                    }
+                })
+                .catch(error => {
+                    console.error(`FAILED GET SPECIFICATION ${name}`, error)
+                    res.status(500).send({success: false, error});
                 });
         });
         // Start angular server for Module
