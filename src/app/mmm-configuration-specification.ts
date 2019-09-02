@@ -84,7 +84,7 @@ export interface FieldSpecification {
 }
 export function isFieldSpecification(value: any): value is FieldSpecification {
     return isObject(value) &&
-        typeof value.name === 'string' &&
+        typeof(value.name) === 'string' &&
         isFieldValueSpecification(value.specification) &&
         ['undefined', 'string'].includes(typeof(value.description))
 }
@@ -93,7 +93,7 @@ export interface ConfigurationSpecification {
 }
 export function isConfigurationSpecification(specification: any): specification is ConfigurationSpecification {
     return isObject(specification) &&
-        !Object.keys(specification).some(key => !isFieldSpecification(specification[key]))
+        Object.keys(specification).filter(key => isFieldSpecification(specification[key])).length === Object.keys(specification).length
 }
 
 function discernFieldValueSpecification(value: any): FieldValueSpecification {

@@ -3,19 +3,21 @@ import { ActivatedRoute } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
 import { ConfigfileService, ModuleConfiguration } from './configfile.service'
 import {
-  ConfigurationSpecification, FieldValueSpecification,
+  ConfigurationSpecification, FieldSpecification, FieldValueSpecification,
   isConfigurationSpecification, isFunction, isPickList, isScalar, toFieldValueDataType,
 } from './mmm-configuration-specification'
 
 export interface RenderableFields {
   path: string[]
   name: string
-  specification: FieldValueSpecification
+  specification?: FieldValueSpecification
+  renderableFields?: RenderableFields[]
   description?: string
   value: any
   isPicklist: boolean
   isFunction: boolean
   isScalar: boolean
+  isObject: boolean
   scalartype?: string
 }
 function getValue(path: string[], config: ModuleConfiguration): any {
@@ -41,24 +43,28 @@ function setValue(path: string[], config: ModuleConfiguration, value: any): void
 function createRenderableFields(path: string[], object: ConfigurationSpecification, config: ModuleConfiguration): RenderableFields[] {
   let result: RenderableFields[] = []
   Object.keys(object).forEach(key => {
-    if (isConfigurationSpecification(object[key].specification)) {
-      result.push(...createRenderableFields([...path, key], <ConfigurationSpecification><any>object[key].specification, config))
-    } else {
-      const renderableField: RenderableFields = {
-        path: [...path, key],
-        name: key,
-        specification: object[key].specification,
-        description: object[key].description,
-        value: getValue([...path, key], config),
-        isPicklist: isPickList(object[key].specification),
-        isFunction: isFunction(object[key].specification),
-        isScalar:  isScalar(object[key].specification), 
-      }
-      if (renderableField.isScalar) {
-        renderableField['scalartype'] = toFieldValueDataType(object[key].specification).toString()
-      }
-      result.push(renderableField)
+    const field: FieldSpecification = object[key]
+    const newPath = [...path, field.name]
+    const isObject = isConfigurationSpecification(field.specification)
+    const renderableField: RenderableFields = {
+      path: newPath,
+      name: key,
+      description: field.description,
+      value: getValue(newPath, config),
+      isPicklist: isPickList(field.specification),
+      isFunction: isFunction(field.specification),
+      isScalar:  isScalar(field.specification),
+      isObject,
     }
+    if (isObject) {
+      renderableField['renderableFields'] = createRenderableFields(newPath, field.specification as ConfigurationSpecification, config)
+    } else {
+      renderableField['specification'] = field.specification
+    }
+    if (renderableField.isScalar) {
+      renderableField['scalartype'] = toFieldValueDataType(field.specification).toString()
+    } 
+    result.push(renderableField)
   })
   return result
 }
@@ -72,7 +78,7 @@ export class ModuleComponent {
   title: string
   private moduleConfig: ModuleConfiguration
   private moduleSpec: ConfigurationSpecification
-  fields: RenderableFields[]
+  private renderableFields: RenderableFields[]
   constructor(private configfileService: ConfigfileService, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
@@ -97,11 +103,36 @@ export class ModuleComponent {
       this.onReset()
     })
   }
+  getLongestName(renderableFields: RenderableFields[], name: string): string {
+    let result = ''
+    renderableFields.forEach(field => {
+      if (field.name.length > result.length) {
+        result = field.name
+      }
+    })
+    return result
+  }
+  getLongestValue(renderableFields: RenderableFields[], name: string): string {
+    let result = ''
+    renderableFields.forEach(field => {
+      const value = field.isObject ?
+      `${this.getLongestName(field.renderableFields, field.name)} ${this.getLongestValue(field.renderableFields, field.name)}` : (field.value || '')
+      if (value.length > result.length) {
+        result = value
+      }
+    })
+    return result
+  }
+  getFields(): RenderableFields[] {
+    return this.renderableFields || []
+  }
   onReset(): void {
-    this.fields = createRenderableFields([], this.moduleSpec, this.moduleConfig)
+    const fields = createRenderableFields([], this.moduleSpec, this.moduleConfig)
+    this.renderableFields = fields
+    console.log('FIELDS', this.renderableFields)
   }
   onSave(): void {
-    this.fields.forEach(field => {
+    this.renderableFields.forEach(field => {
       setValue(field.path, this.moduleConfig, field.value)
     })
     this.configfileService.putModule(this.moduleConfig).subscribe()

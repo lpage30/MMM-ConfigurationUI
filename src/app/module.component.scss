@@ -1,0 +1,24 @@
+.all-tables {
+    table-layout: fixed;
+    align: left;
+    cellspacing: 0;
+    cellpadding: 0;
+}
+
+.all-cells {
+    vertical-align: top;
+    overflow: hidden;
+}
+.all-label-cells {
+    text-align: right;
+}
+.all-field-cells {
+    text-align: left;
+
+}
+.no-border {
+    border: 0;
+}
+.border {
+    border:  1px solid black;
+}
