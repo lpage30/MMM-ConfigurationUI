@@ -1,0 +1,6 @@
+<h1>{{title}}</h1>
+<h2><select class="form-control" (change)="loadModuleConfig($event)">
+  <option>{{defaultModuleName}}</option>
+  <option *ngFor="let name of moduleNames" [value]="name">{{name}}</option>
+</select></h2>
+<router-outlet></router-outlet>

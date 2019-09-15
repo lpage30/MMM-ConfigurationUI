@@ -1,0 +1,16 @@
+<section>
+<div id="{{field.id}}" class="border">
+    <cdk-virtual-scroll-viewport  style="height: 500px" itemSize="90" >
+        <div *ngFor="let arrayElem of field.renderableFields"
+         (contextmenu)="openContextMenu($event, arrayElem)">
+            <app-input-field [field]="arrayElem"></app-input-field>
+        </div>
+    </cdk-virtual-scroll-viewport>
+</div>
+</section>
+<ng-template #contextMenu let-arrayElem>
+    <section>
+        <div (click)="removeElement(arrayElem)">Remove</div>
+        <div (click)="addElement(arrayElem)">Add New</div>
+    </section>
+</ng-template>
