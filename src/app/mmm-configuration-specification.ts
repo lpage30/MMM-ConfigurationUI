@@ -1,4 +1,4 @@
-import { ModuleConfiguration } from './configfile.service'
+import { ConfigfileService, ModuleConfiguration } from './configfile.service'
 
 // type for Field Value
 export enum FieldValueDataType {
@@ -235,6 +235,40 @@ export function setValue(path: string[], config: ModuleConfiguration, value: any
         }
     }
     parent[childField] = value
+}
+export interface RenderableModule {
+    canRender: boolean
+    name: string
+    fields: RenderableField[]
+    config: ModuleConfiguration
+    spec: ConfigurationSpecification
+}
+export async function createRenderableModule(moduleName: string, configfileService: ConfigfileService): Promise<RenderableModule> {
+    const result = {
+        canRender: true,
+        name: moduleName,
+        config: await configfileService.getModule(moduleName).toPromise(),
+        spec: await configfileService.getModuleSpecification('magicmirror', { module: '' }).toPromise(),
+        fields: [],
+    }
+    const moduleSpec = await configfileService.getModuleSpecification(result.config.module, result.config).toPromise()
+    result.spec.config.specification = moduleSpec.config.specification
+    result.fields = createRenderableFields([], result.spec, result.config)
+    return result
+}
+export async function saveRenderableModule(module: RenderableModule, configfileService: ConfigfileService) {
+    const setValues = (fields: RenderableField[]) => {
+        fields.forEach(field => {
+          if (field.renderableFields) {
+            setValues(field.renderableFields)
+          } else {
+            setValue(field.path, module.config, field.value)
+          }
+        })
+    }
+    setValues(module.fields)
+    console.log('saving', module.config)
+    await configfileService.putModule(module.config).toPromise()
 }
 // Type of Field being specified
 enum FieldSpecType {

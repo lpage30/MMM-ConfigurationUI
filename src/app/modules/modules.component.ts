@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { Router } from "@angular/router";
 import { map } from 'rxjs/operators';
 import { ConfigfileService } from '../configfile.service'
+import { createRenderableModule, RenderableModule } from '../mmm-configuration-specification'
 
 @Component({
   selector: 'app-root',
@@ -12,21 +12,35 @@ import { ConfigfileService } from '../configfile.service'
 export class ModulesComponent {
   defaultModuleName = 'No Module Selected'
   moduleNames: string[]
-  constructor(
-    private configfileService: ConfigfileService,
-    private router: Router) { }
+  selectedModule: RenderableModule
+
+  constructor(private configfileService: ConfigfileService) {
+    this.clearSelected()
+  }
 
   ngOnInit(): void {
     this.configfileService.getModules()
     .pipe(map(configs => configs.map(config => config.module)))
     .subscribe(names => {
       this.moduleNames = names
+      this.clearSelected()
     })
   }
-  loadModuleConfig(event) {
-    if (this.defaultModuleName === event.target.value) return
-    this.router.navigateByUrl(`/module/${event.target.value}`)
-      .then(data => console.info('NAVIGATED', event, data))
-      .catch(error => console.error('NAVIGATE FAILED', event, error))
+
+  async selectModule(moduleName) {
+    if (this.defaultModuleName === moduleName) {
+      this.clearSelected()
+    } else if (this.selectModule.name !== moduleName) {
+      this.selectedModule = await createRenderableModule(moduleName, this.configfileService)
+    }
+  }
+  private clearSelected() {
+    this.selectedModule = {
+      canRender: false,
+      name: this.defaultModuleName,
+      config: undefined,
+      spec: undefined,
+      fields: undefined,
+    }
   }
 }

@@ -26,7 +26,7 @@ async function readConfigfile() {
   let configVarNest = undefined;
   lines.forEach(line => {
     if (configVarNest === undefined) {
-      if (line.match(/^\s*(var|const)\s*config\s*\s*{.*$/)) {
+      if (line.match(/^\s*(var|const)\s*config\s*=\s*{.*$/)) {
         configVarNest = 1;
       } else {
         prefix.push(line);
@@ -40,13 +40,16 @@ async function readConfigfile() {
       })
     }
   })
+  const trimArray = (lines) => lines
+    .map(line => line.trim())
+    .filter((line, index) => line.length > 0 || ((index + 1) < lines.length && lines[index + 1].length > 0))
   delete require.cache[require.resolve(MMM_CONFIG_FILE)];
   const config = require(MMM_CONFIG_FILE);
   console.log('FINISHED READING', MMM_CONFIG_FILE)
   return {
-      prefix,
+      prefix: trimArray(prefix),
       config,
-      suffix,
+      suffix: trimArray(suffix),
   };
 }
 /**
@@ -58,12 +61,12 @@ async function readConfigfile() {
  * } param0 
  */
 async function writeConfigFile({ prefix, config, suffix }) {
-  console.info('WRITING...', MMM_CONFIG_FILE);
-  const configlines = stringify(config, null, '\t').split(/\r?\n/);
+  console.info('WRITING...', MMM_CONFIG_FILE, config);
+  const configlines = JSON.stringify(config, null, '\t').split(/\r?\n/);
   configlines[0] = `var config = ${configlines[0]}`;
   configlines[configlines.length - 1] += ';';
   await writeFileAsync(MMM_CONFIG_FILE,
-    `${config.prefix.join('\n')}\n${configlines.join('\n')}\n${config.suffix.join('\n')}\n`,
+    `${prefix.join('\n')}\n${configlines.join('\n')}\n${suffix.join('\n')}\n`,
     'utf-8');
   console.log('FINISHED WRITING', MMM_CONFIG_FILE)
 }
@@ -93,7 +96,8 @@ class ConfigurationFile {
         if (allOtherModules.length == config.modules.length) {
             throw new Error(`NOT FOUND: ${moduleComfig.module}`);
         }
-        this.config.modules = [...allOtherModules, moduleConfig];
+        config.modules = [...allOtherModules, moduleConfig];
+        this.config.config = config
         console.log('FINISHED PUTTING MODULE CONFIG', moduleConfig.module)
     }
 

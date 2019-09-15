@@ -87,12 +87,12 @@ export class ConfigfileService {
   putModules(modules: ModuleConfiguration[]): Observable<void> {
     return this.getBaseURI()
      .pipe(switchMap(baseURI => this.http
-      .put<void>(`${baseURI}/configurations`, { modules })))
+      .put<void>(`${baseURI}/configurations`, modules)))
   }
   putModule(module: ModuleConfiguration): Observable<void> {
     return this.getBaseURI()
      .pipe(switchMap(baseURI => this.http
-      .put<void>(`${baseURI}/configuration`, { module })))
+      .put<void>(`${baseURI}/configuration`, module)))
   }
   private getBaseURI(): Observable<string> {
     if (this.baseURI) {

@@ -10,7 +10,12 @@ export class InputFieldComponent implements OnInit {
   @Input() field: RenderableField
   constructor() { }
 
-  ngOnInit() {
+  ngOnInit() { }
+  setValue(value: any): void {
+    this.field.value = value
+  }
+  isValue(value: any): boolean {
+    return value === this.field.value
   }
 
 }

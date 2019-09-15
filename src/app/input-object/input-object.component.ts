@@ -13,11 +13,11 @@ export class InputObjectComponent implements OnInit {
 
   ngOnInit() {
   }
-  getLongestName(renderableFields: RenderableField[]): string {
-    return getLongestName(renderableFields)
+  getLongestName(): string {
+    return getLongestName(this.fields)
   }
-  getLongestValue(renderableFields: RenderableField[]): string {
-    return getLongestValue(renderableFields)
+  getLongestValue(): string {
+    return getLongestValue(this.fields)
   }
  
 }

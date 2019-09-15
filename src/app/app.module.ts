@@ -7,21 +7,15 @@ import { HttpClientModule } from  '@angular/common/http';
 import { ScrollDispatchModule } from '@angular/cdk/scrolling';
 import { AppRoutingModule } from './app-routing.module';
 import { ModulesComponent } from './modules/modules.component';
-import { ModuleComponent } from './module/module.component';
-import { RouterModule, Routes } from '@angular/router';
+import { InputModuleComponent } from './input-module/input-module.component';
 import { InputArrayComponent } from './input-array/input-array.component';
 import { InputObjectComponent } from './input-object/input-object.component';
 import { InputFieldComponent } from './input-field/input-field.component';
 
-const appRoutes: Routes = [
-  { path: 'modules', component: ModulesComponent, data: { title: 'Configured Modules' }},
-  { path: 'module/:name',      component: ModuleComponent },
-];
-
 @NgModule({
   declarations: [
     ModulesComponent,
-    ModuleComponent,
+    InputModuleComponent,
     InputArrayComponent,
     InputObjectComponent,
     InputFieldComponent,
@@ -33,10 +27,6 @@ const appRoutes: Routes = [
     FormsModule,
     HttpClientModule,
     ScrollDispatchModule,
-    RouterModule.forRoot(
-      appRoutes,
-      { enableTracing: true }, // <-- debugging purposes only),
-    ),
   ],
   providers: [],
   bootstrap: [ModulesComponent]

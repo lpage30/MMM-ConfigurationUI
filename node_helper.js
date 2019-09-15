@@ -74,7 +74,7 @@ module.exports = NodeHelper.create({
         // updates all the configs
         this.expressApp.put('/configurations', (req, res) => {
             console.log('PUT-REQUEST all')
-            const { modules } = req.body
+            const modules = req.body
             const promises = modules.forEach(module => {
                 return this.configFile.putModuleConfig(module)
             })
@@ -96,9 +96,9 @@ module.exports = NodeHelper.create({
         });
         // updates the config
         this.expressApp.put('/configuration', (req, res) => {
-            const { module } = req.body
+            const module = req.body
             const name = module.module
-            console.log(`PUT-REQUEST ${name}`)
+            console.log(`PUT-REQUEST ${name}`, module)
             this.configFile.putModuleConfig(module)
              .then(() => {
                     this.configFile.putConfig()
