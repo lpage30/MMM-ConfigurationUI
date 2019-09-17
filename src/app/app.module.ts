@@ -1,10 +1,11 @@
 
 import { BrowserModule } from '@angular/platform-browser';
+import { ScrollDispatchModule } from '@angular/cdk/scrolling';
+import { HttpClientModule } from  '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { FileSaverModule } from 'ngx-filesaver'
-import { HttpClientModule } from  '@angular/common/http';
-import { ScrollDispatchModule } from '@angular/cdk/scrolling';
 import { AppRoutingModule } from './app-routing.module';
 import { ModulesComponent } from './modules/modules.component';
 import { InputModuleComponent } from './input-module/input-module.component';
@@ -26,6 +27,7 @@ import { InputFieldComponent } from './input-field/input-field.component';
     FileSaverModule,
     FormsModule,
     HttpClientModule,
+    NgbModule,
     ScrollDispatchModule,
   ],
   providers: [],

@@ -21,6 +21,7 @@
     "@angular/platform-browser-dynamic": "^8.0.3",
     "@angular/router": "^8.0.3",
     "@coreui/coreui": "^2.1.12",
+    "@ng-bootstrap/ng-bootstrap": "^5.1.1",
     "@types/file-saver": "^2.0.1",
     "@types/filesaver": "0.0.30",
     "cheerio": "^1.0.0-rc.3",

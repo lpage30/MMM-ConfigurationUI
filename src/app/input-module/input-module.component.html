@@ -2,7 +2,7 @@
 <table class="all-tables">
     <tr style="display:none;"><td><div>AAAAA{{getLongestName()}}</div></td><div>AAAAA{{getLongestValue()}}</div></tr>
     <tr *ngFor="let field of module.fields">
-        <td class="all-cells all-label-cells"><label>{{field.name}}</label></td>
+        <td class="all-cells all-label-cells"><label ngbTooltip="{{field.description}}">{{field.name}}</label></td>
         <td class="all-cells all-field-cells">
             <app-input-field [field]="field"></app-input-field>
         </td>
