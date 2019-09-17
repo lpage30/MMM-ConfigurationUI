@@ -1,5 +1,11 @@
 # MMM-ConfigurationUI
-This is meant to be used to host a configuration UI for MagicMirror. Each Module should should have some page or definition on how to update their configuration. That definition should be assimilated into this UI.
+This is meant to be used to host a configuration UI for MagicMirror. This module loads the config.js for MagicMirror and collects and presents the names of the modules configured in that file. 
+
+The forms to edit each of these module configurations are created based on 2 possible options.
+
+* The module provides a specification json file for their configuration. This file would describe the fields their data types, and tooltip descriptions.
+
+* The module's configuration as found in config.js is used to generate a specification. When a specification cannot be found the module's existing configuration is used to generate a specification which thne gets rendered as a data entry form.
 
 # Approach
 The MMM-ConfigurationUI contains: 
@@ -14,7 +20,7 @@ The MMM-ConfigurationUI contains:
 - The angular webapp is hosted in an IFRAME on MagicMirror (similar to calendar and others)
 
 ## Configuration UI Server (Angular server)
-The angular server operates and is constructed like any other server. It knows about the rest APIs hosted by the Module's node_helper, and uses them to read and write the module configurations.  
+The angular server operates and is constructed like any other angular server. It knows about the rest APIs hosted by the Module's node_helper, and uses them to read and write the module configurations.  
 
 After reading the module configurations, the initial web page will be a menu of each module that can be configured.  
 
@@ -22,10 +28,6 @@ The user selects the module which navigates them to a form generated for that sp
 
 This form is created using the read module configuration and a specification hosted in the Module's directory. This allows any module to customize how they allow users to alter their configuration. If the module does not provide a specification, a simple generic form will be rendered with entries for all fields in that module's configuration.
 
-
-# dependencies
-* angular cli: `sudo npm install -g @angular/cli` (note requires node 10.9+)
-* You may need to upgrade NPM and node
 
 # setup
 1. copy over module into MagicMirror/modules directory
@@ -53,11 +55,87 @@ This form is created using the read module configuration and a specification hos
         },
     }
 ```
-# Initial Angular Project was Generated
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.0.2.
-[Notes](https://adrianmejia.com/angular-2-tutorial-create-a-crud-app-with-angular-cli-and-typescript/)
 
+# Module Configuration Specification
+In order to provide a more meaningful configuration UI for a module, the module can provide a specification for its configuration. This specification is a JSON file named `mmm-configuration-ui-specfile.json` in your module directory.
 
-## Further Angular help
+## JSON format:
+For every field named `<field-name>` you can specify one of 3 specifications
+1. field as scalar type. This covers the following types: `string, number, boolean` **or** `array of string, number or boolean`
+```
+{ 
+    "<field-name>": "<field-scalar-data-type>" | ["<field-scalar-data-type>"]
+    "<field-name>_description": "tooltip description  of <fieldname>"
+}
+```
+2. field as object type This covers a single or array of object field specifications. The `{}` should contain a specification as described in this JSON format.
+```
+{ 
+    "<field-name>": {} | [{}]
+    "<field-name>_description": "tooltip description of <fieldname>"
+}
+```
+3. field as picklist type.This covers a field that has a fixed number of choices, or a picklist.
+```
+{
+    "<field-name>_picklist": [
+        "<item1>", ... , "<itemN>"
+        ],
+    "<field-name>_description": "tooltip description of <fieldname>"
+}
+```
+### example
+A module configuration may look like this:
+```
+{ 
+    cssClassname: 'some-class-name',
+    listeningPort: 6002,
+    showHelp: true,
+    position: 'left',
+    margins: [0, 1, 2, 3],
+    details: {
+        ipaddress: '127.0.0.1',
+    },
+    files: [
+        {
+            file: 'somefile',
+            type: 'txt',
+        },
+        {
+            file: 'otherfile',
+            type: 'csv',
+        }
+    ]
+}
+```
+A specification for this configuration:
+```
+{ 
+    "cssClassname": "string",
+    "listeningPort": "number",
+    "listeningPort_description": "port bound to listen for incoming data",
+    "showHelp": "boolean",
+    "position_picklist": ["left", "right", "top", "bottom"],
+    "margins": ["number"],
+    "margins_description": "left, right top bottom margins",
+    "details": {
+        "ipaddress": "string"
+    },
+    "details_description": "detailed connection information",
+    "files": [
+        {
+            "file": "string",
+            "type_picklist": ["txt", "csv", "js"],
+        }
+    ],
+    "defaultFile": {
+        "file": "string",
+        "type_picklist": ["txt", "csv", "js"],
+    },
+    "defaultFile_description": "default file to upload"
+}
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+### Sample Render
+![configuration ui form][./sample-screen.png]
+
