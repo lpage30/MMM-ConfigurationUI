@@ -1,4 +1,5 @@
 const MagicMirrorRoot = __dirname.substring(0, __dirname.indexOf('MagicMirror') + 11);
+const { spawn } = require('child_process');
 const { readFile, writeFile, existsSync } = require('fs');
 const path = require('path');
 const { promisify } = require('util');
@@ -6,6 +7,7 @@ const { MMM_MODULES_DIR, MMM_THIS_MODULE_NAME } = r = require(`${MagicMirrorRoot
 
 const MMM_CONFIG_FILE = path.join(MMM_MODULES_DIR, '../config/config.js');
 const MM_SPECIFICATION_FILE = path.join(MMM_MODULES_DIR, `${MMM_THIS_MODULE_NAME}/src/assets/mmm-configuration-specification.json`)
+const MM_PACKAGE_JSON = path.join(MMM_MODULES_DIR, '../package.json');
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
 
@@ -70,6 +72,25 @@ async function writeConfigFile({ prefix, config, suffix }) {
     'utf-8');
   console.log('FINISHED WRITING', MMM_CONFIG_FILE)
 }
+function getModuleDirectory(moduleName) {
+  return moduleName.toLowerCase() === 'magicmirror' ? 
+  path.join(MMM_MODULES_DIR, '..') : path.join(MMM_MODULES_DIR, moduleName);
+}
+async function getPackageJson(moduleName) {
+  const moduledir = getModuleDirectory(moduleName);
+  const packageJSON = path.join(moduledir, 'package.json');
+  if (existsSync(packageJSON)) {
+    const packageString = await readFileAsync(packageJSON, 'utf-8');
+    return JSON.parse(packageString);
+  }
+  return undefined;
+}
+async function executeCommand(commandline) {
+  return new Promise(resolve => {
+    const child = spawn(commandline, { shell: true, detached: true });
+    child.on('exit', () => resolve())
+  })
+}
 
 class ConfigurationFile {
 
@@ -109,6 +130,35 @@ class ConfigurationFile {
         return JSON.parse(moduleSpecificationString);
       }
       return undefined;
+    }
+    static async canRebuild(moduleName) {
+      const packageJson = await getPackageJson(moduleName);
+      return packageJson && packageJson.scripts && packageJson.scripts.build;
+    }
+    static async rebuild(moduleName) {
+      const moduledir = getModuleDirectory(moduleName);
+      const packageJson = await getPackageJson(moduleName);
+      if (packageJson && packageJson.scripts && packageJson.scripts.build) {
+        await executeCommand(`pushd ${moduledir} && npm run build; popd`);
+        return true;
+      }
+      return false;
+    }
+    static async canRestart(moduleName) {
+      const packageJson = await getPackageJson(moduleName);
+      return packageJson && packageJson.scripts && packageJson.scripts.start;
+    }
+    static async restart(moduleName) {
+      const moduledir = getModuleDirectory(moduleName);
+      const packageJson = await getPackageJson(moduleName);
+      if (packageJson && packageJson.scripts && packageJson.scripts.start) {
+        await executeCommand(`pushd ${moduledir} && npm run start; popd`);
+        if ('magicmirror' === moduleName) {
+          process.exit(0)
+        }
+        return true;
+      }
+      return false;
     }
 }
 module.exports =  ConfigurationFile;

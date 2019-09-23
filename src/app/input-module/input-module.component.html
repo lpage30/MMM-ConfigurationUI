@@ -8,7 +8,13 @@
         </td>
     </tr>
     <tr>
-        <td><button (click)="reset()">Reset</button></td>
-        <td><button (click)="submit()">Submit</button></td>
+        <td><table><tr>
+            <td><button (click)="reset()">Reset</button></td>
+            <td><button (click)="submit()">Submit</button></td>
+        </tr></table></td>
+        <td><table><tr>
+            <td><button (click)="rebuild()" *ngIf="showRebuild">Rebuild</button></td>
+            <td><button (click)="restart()" *ngIf="showRestart">Restart</button></td>
+        </tr></table></td>
     </tr>
 </table>

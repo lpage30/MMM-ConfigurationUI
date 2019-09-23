@@ -10,8 +10,12 @@ import { createRenderableFields, getLongestName, getLongestValue, RenderableModu
 })
 export class InputModuleComponent implements OnInit {
   @Input() module: RenderableModule
+  showRebuild: boolean
+  showRestart: boolean
 
-  constructor(private configfileService: ConfigfileService) { 
+  constructor(private configfileService: ConfigfileService) {
+    this.showRebuild = false
+    this.showRestart = false
   }
 
   ngOnInit(): void {
@@ -25,7 +29,19 @@ export class InputModuleComponent implements OnInit {
   reset(): void {
     this.module.fields = createRenderableFields([], this.module.spec, this.module.config)
   }
+  
+  async rebuild() {
+    await this.configfileService.rebuild(this.module.name)
+    this.showRestart = await this.configfileService.canRestart(this.module.name).toPromise()
+  }
+  async restart() {
+    await this.configfileService.restart(this.module.name).toPromise()
+  }
   async submit() {
     await saveRenderableModule(this.module, this.configfileService)
+    this.showRebuild = await this.configfileService.canRebuild(this.module.name).toPromise()
+    if (!this.showRebuild) {
+      this.showRestart = await this.configfileService.canRestart(this.module.name).toPromise()
+    }
   }
 }

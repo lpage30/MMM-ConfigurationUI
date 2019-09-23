@@ -41,7 +41,7 @@ export class ConfigfileService {
     return this.getBaseURI()
       .pipe(switchMap(baseURI => this.http
         .get<RestResponse>(`${baseURI}/${path}`)
-          .pipe(map(value => {
+        .pipe(map(value => {
               console.log(`RECEIVED ${value.success}`, path)
               return value
           }),
@@ -93,6 +93,32 @@ export class ConfigfileService {
     return this.getBaseURI()
      .pipe(switchMap(baseURI => this.http
       .put<void>(`${baseURI}/configuration`, module)))
+  }
+  canRebuild(moduleName: string): Observable<boolean> {
+    return this.get(`canrebuild/${name}`)
+    .pipe(map((value: RestResponse) => {
+      return value.success
+    }))
+  }
+  rebuild(moduleName: string): Observable<boolean> {
+    return this.getBaseURI()
+      .pipe(switchMap(baseURI => this.http
+        .post<boolean>(`${baseURI}/rebuild/${moduleName}`, {})))
+  }
+  canRestart(moduleName: string): Observable<boolean> {
+    return this.get(`canrestart/${name}`)
+    .pipe(map((value: RestResponse) => {
+      return value.success
+    }))
+  }
+  restart(moduleName: string): Observable<boolean> {
+    console.log('restart', moduleName)
+    return this.getBaseURI()
+      .pipe(switchMap(baseURI => {
+        console.log('RESTART', baseURI, moduleName)
+        return this.http
+        .post<boolean>(`${baseURI}/restart/${moduleName}`, {})
+      }))
   }
   private getBaseURI(): Observable<string> {
     if (this.baseURI) {

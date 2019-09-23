@@ -13,9 +13,11 @@ export class ModulesComponent {
   defaultModuleName = 'No Module Selected'
   moduleNames: string[]
   selectedModule: RenderableModule
+  showRestart: boolean
 
   constructor(private configfileService: ConfigfileService) {
     this.clearSelected()
+    this.showRestart = true
   }
 
   ngOnInit(): void {
@@ -33,6 +35,10 @@ export class ModulesComponent {
     } else if (this.selectModule.name !== moduleName) {
       this.selectedModule = await createRenderableModule(moduleName, this.configfileService)
     }
+  }
+  async restart() {
+    await this.configfileService.restart('magicmirror').toPromise()
+
   }
   private clearSelected() {
     this.selectedModule = {

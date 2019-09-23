@@ -31,16 +31,19 @@ Module.register(MMM_THIS_MODULE_NAME, {
 		if(this.serverRunning) {
 			configUI = document.createElement("iframe");
 			configUI.setAttribute('src', CONFIGURATION_UI_URL);
-			configUI.style.paddingTop = '20px'
+			// configUI.style.paddingTop = '20px'
 		} else {
 			configUI = document.createElement("div");
 			configUI.innerHTML = 'Loading...'
-			configUI.style.paddingTop = '20px'
+			// configUI.style.paddingTop = '20px'
 		}
 		if (this.config.cssClassname) configUI.className = this.config.cssClassname;
 		return configUI;
 	},
-	getStyles: function() {
+	getScripts: function () {
+		return [this.file('custom.css')]
+	},
+	getStyles: function () {
 		return [
 			this.file('configuration-style.css'),
 		]

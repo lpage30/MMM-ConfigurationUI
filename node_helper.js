@@ -9,7 +9,7 @@ const ConfigFile = require('./configfile');
 const {CONFIG_SERVER_RUNNING,  HOST_ADDRESS, MM_PORT,
     MMM_CONFIGURATION_UI_PORT,  MMM_MODULES_DIR, MMM_THIS_MODULE_NAME, MODULE_STARTED} = require('./application_paths');
 const MAGICMIRROR_URI = `http://${HOST_ADDRESS}:${MM_PORT}`;
-
+  
 function updateAppSettingsJson() {
     const appSettingsJSONFile = path.join(MMM_MODULES_DIR, MMM_THIS_MODULE_NAME, 'src/assets/appsettings.json')
     const currentSettings = JSON.parse(readFileSync(appSettingsJSONFile, 'utf8'))
@@ -35,13 +35,13 @@ module.exports = NodeHelper.create({
     start: function () {
         this.moduleStarted = false;
         this.configUIServerRunning = false;
-        this.configFile = new ConfigFile()
+        this.configFile = new ConfigFile();
+
         updateAppSettingsJson();
         this.expressApp.use(bodyParser.urlencoded({ extended: true }))
         this.expressApp.use(bodyParser.json())
-        this.expressApp.use(cors())
+        this.expressApp.use(cors());
         console.log("Starting node helper for: " + this.name);
-
         this.expressApp.get('/configurations', (req, res) => {
             console.log('GET-REQUEST all')
             this.configFile.getConfig()
@@ -129,6 +129,74 @@ module.exports = NodeHelper.create({
                 })
                 .catch(error => {
                     console.error(`FAILED GET SPECIFICATION ${name}`, error)
+                    res.status(500).send({success: false, error});
+                });
+        });
+        this.expressApp.get('/canrebuild/:name', (req, res) => {
+            const name = req.params.name
+            console.log(`GET-CAN-REBUILD-REQUEST ${name}`)
+            ConfigFile.canRebuild(name)
+                .then(result => {
+                    if (result) {
+                        res.status(200).send({ success: true })
+                    } else {
+                        res.status(404).send({ success: false })
+                    }
+                })
+                .catch(error => {
+                    console.error(`FAILED GET CAN REBUILD ${name}`, error)
+                    res.status(500).send({success: false, error});
+                });
+        });
+
+        this.expressApp.post('/rebuild/:name', (req, res) => {
+            const name = req.params.name
+            console.log(`POST-REBUILD-REQUEST ${name}`)
+            ConfigFile.rebuild(name)
+                .then(result => {
+                    if (result) {
+                        res.status(200).send({ success: true })
+                    } else {
+                        console.error(`${name} cannot be rebuilt`)
+                        res.status(404).send({ success: false, error: new Error(`${name} does not have a build option`)})
+                    }
+                })
+                .catch(error => {
+                    console.error(`FAILED POST REBUILD ${name}`, error)
+                    res.status(500).send({success: false, error});
+                });
+
+        });
+        this.expressApp.get('/canrestart/:name', (req, res) => {
+            const name = req.params.name
+            console.log(`GET-CAN-RESTART-REQUEST ${name}`)
+            ConfigFile.canRestart(name)
+                .then(result => {
+                    if (result) {
+                        res.status(200).send({ success: true })
+                    } else {
+                        res.status(404).send({ success: false })
+                    }
+                })
+                .catch(error => {
+                    console.error(`FAILED GET CAN RESTART ${name}`, error)
+                    res.status(500).send({success: false, error});
+                });
+        });
+        this.expressApp.post('/restart/:name', (req, res) => {
+            const name = req.params.name
+            console.log(`POST-RESTART-REQUEST ${name}`)
+            ConfigFile.restart(name)
+                .then(result => {
+                    if (result) {
+                        res.status(200).send({ success: true })
+                    } else {
+                        console.error(`${name} cannot be restarted`)
+                        res.status(404).send({ success: false, error: new Error(`${name} does not have a restart option`)})
+                    }
+                })
+                .catch(error => {
+                    console.error(`FAILED POST RESTART ${name}`, error)
                     res.status(500).send({success: false, error});
                 });
         });
